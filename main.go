@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -229,14 +228,14 @@ func registerAttendee(c *gin.Context) {
 }
 
 func loginAdmin(c *gin.Context) {
-	loginUser(c, "Admins", "AdminID")
+	loginUser(c, "Admins")
 }
 
 func loginAttendee(c *gin.Context) {
-	loginUser(c, "Attendees", "UniqueID")
+	loginUser(c, "Attendees")
 }
 
-func loginUser(c *gin.Context, tableName, idField string) {
+func loginUser(c *gin.Context, tableName string) {
 	var login Login
 	if err := c.ShouldBindJSON(&login); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -266,8 +265,6 @@ func loginUser(c *gin.Context, tableName, idField string) {
 			return
 		}
 	}
-
-	fmt.Println(idField, tableName, login.Email, fname, lname, hashedPassword)
 
 	if !checkPasswordHash(login.Password, hashedPassword) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
@@ -311,7 +308,6 @@ func createSession(c *gin.Context) {
 	}
 
 	claims, err := decodeJWTToken(sessionInfo.Token)
-	fmt.Println(claims)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
@@ -331,7 +327,6 @@ func createSession(c *gin.Context) {
 
 	startTime, err := time.Parse("2006-01-02 15:04:05", sessionInfo.StartTime)
 	if err != nil {
-		fmt.Println(err, sessionInfo.StartTime)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start time"})
 		return
 	}
@@ -449,7 +444,6 @@ func joinSession(c *gin.Context) {
 	currentTime = currentTime.Add(5*time.Hour + 30*time.Minute)
 
 	if currentTime.Before(startTime) || currentTime.After(endTime) {
-		fmt.Println(currentTime, startTime, endTime)
 		tx.Rollback()
 		c.JSON(http.StatusForbidden, gin.H{"error": "Session is not active"})
 		return
@@ -782,7 +776,6 @@ func getSessionAttendees(c *gin.Context) {
 	}
 
 	if address == "" || latitude == -360 || longitude == -360 {
-		fmt.Println(address, latitude, longitude)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Location not found"})
 		return
 	}
