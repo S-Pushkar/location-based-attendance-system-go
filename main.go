@@ -73,6 +73,10 @@ func main() {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
+	r.HandleMethodNotAllowed = true
+
+	r.RedirectTrailingSlash = true
+
 	r.GET("/hello", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"Hello": "World"})
 	})
